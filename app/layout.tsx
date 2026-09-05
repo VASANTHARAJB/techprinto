@@ -71,7 +71,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
-
+  
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
+  
   verification: {
     google: "NRmVZE_C-MUF3qult9qS4Na94_7YrLTtdKxLavscKP4",
   },
