@@ -1,7 +1,7 @@
 // components/layout/navbar.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,8 +22,8 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,18 +31,18 @@ export function Navbar() {
 
       setIsScrolled(currentScrollY > 40);
 
-      if (currentScrollY > lastScrollY && currentScrollY > 120) {
+      if (currentScrollY > lastScrollY.current && currentScrollY > 120) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
 
-      setLastScrollY(currentScrollY);
+      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   const openModal = () => {
     window.dispatchEvent(new CustomEvent("open-project-modal"));
@@ -50,7 +50,7 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 pt-4 pb-2 px-6 md:px-10 transition-all duration-300 pointer-events-none ${
+      className={`fixed top-0 inset-x-0 z-50 pt-3 pb-2 px-4 sm:px-6 md:px-10 transition-transform duration-300 pointer-events-none ${
         isVisible ? "translate-y-0" : "-translate-y-24"
       }`}
     >
@@ -61,12 +61,12 @@ export function Navbar() {
             : "bg-transparent border-transparent"
         }`}
       >
-        {/* BrandLogo handles its own Link internally */}
+        {/* BrandLogo */}
         <div className="flex items-center pl-2">
           <BrandLogo />
         </div>
 
-        {/* Center Nav Pills */}
+        {/* Center Nav Pills (Desktop) */}
         <nav className="hidden lg:flex items-center">
           <div className="flex items-center p-1 rounded-full bg-[#0B0D13]/90 backdrop-blur-xl border border-white/[0.12] shadow-lg">
             {NAV_LINKS.map((link) => {
@@ -100,10 +100,10 @@ export function Navbar() {
           </div>
         </nav>
 
-        {/* Action Controls */}
+        {/* Action Controls (Desktop/Tablet) */}
         <div className="hidden sm:flex items-center gap-2.5 pr-2">
           <a
-            href="tel:+910000000000"
+            href="tel:+919789501854"
             aria-label="Call Studio"
             className="w-10 h-10 rounded-[14px] bg-[#16181F]/90 hover:bg-[#20232D] backdrop-blur-xl border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-transform active:scale-95 shadow-md"
           >
@@ -119,25 +119,26 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Toggle */}
-        <div className="flex lg:hidden items-center pr-2">
+        {/* Mobile Toggle Button */}
+        <div className="flex lg:hidden items-center pr-1">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="w-10 h-10 rounded-[12px] bg-[#16181F]/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white"
+            aria-label="Toggle Menu"
+            className="w-10 h-10 rounded-[12px] bg-[#16181F]/90 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white active:scale-95 transition-transform"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Dropdown Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden mt-3 max-w-sm mx-auto p-4 rounded-2xl bg-[#090B10]/95 backdrop-blur-2xl border border-white/10 shadow-2xl pointer-events-auto space-y-3"
+            className="lg:hidden mt-2 w-full max-w-sm mx-auto p-4 rounded-2xl bg-[#090B10]/95 backdrop-blur-2xl border border-white/10 shadow-2xl pointer-events-auto space-y-3"
           >
             <div className="grid grid-cols-2 gap-1.5">
               {NAV_LINKS.map((link) => (
@@ -145,22 +146,37 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 text-sm text-[#8E95A5] hover:text-white rounded-lg"
+                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                    pathname === link.href
+                      ? "text-white bg-white/10 font-medium"
+                      : "text-[#8E95A5] hover:text-white hover:bg-white/5"
+                  }`}
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                openModal();
-              }}
-              className="w-full h-10 rounded-xl bg-gradient-to-r from-[#FF7A00] to-[#FF4500] text-white font-semibold text-sm flex items-center justify-center gap-2"
-            >
-              <span>Start a Project</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+
+            <div className="pt-2 border-t border-white/10 flex items-center gap-2">
+              <a
+                href="tel:+919789501854"
+                className="w-11 h-11 rounded-xl bg-[#16181F] border border-white/10 flex items-center justify-center text-white shrink-0 active:scale-95"
+                aria-label="Call Now"
+              >
+                <Phone className="w-4 h-4" />
+              </a>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openModal();
+                }}
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#FF7A00] to-[#FF4500] text-white font-medium text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              >
+                <span>Start a Project</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
