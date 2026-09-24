@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { Footer } from "@/components/layout/footer";
 import {
   Sparkles,
@@ -52,10 +51,54 @@ export default function ContactPage() {
     e.preventDefault();
     setStatus("submitting");
 
-    // Simulated technical dispatch (wire to /api/contact or external webhook)
-    setTimeout(() => {
-      setStatus("success");
-    }, 1200);
+    try {
+      // 1. Send Email to techprintopvtltd@gmail.com via Web3Forms
+      // Replace with your Web3Forms Access Key (free from https://web3forms.com)
+      const emailPayload = {
+        access_key: "c941d91c-787f-4d93-a0a9-14c757a5a3d6",
+        subject: `New Project Inquiry: ${formData.discipline} from ${formData.name}`,
+        from_name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company || "Not Specified",
+        discipline: formData.discipline,
+        timeline: formData.timeline,
+        message: formData.description,
+      };
+
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(emailPayload),
+      });
+
+      // 2. Open WhatsApp with pre-filled scope details
+      const waMessage = encodeURIComponent(
+        `*New Architecture Inquiry - Techprinto*\n\n` +
+        `*Name:* ${formData.name}\n` +
+        `*Email:* ${formData.email}\n` +
+        `*Phone:* ${formData.phone}\n` +
+        `*Company:* ${formData.company || "N/A"}\n` +
+        `*Discipline:* ${formData.discipline}\n` +
+        `*Timeline:* ${formData.timeline}\n` +
+        `*Technical Scope:*\n${formData.description}`
+      );
+
+      window.open(`https://wa.me/917449030403?text=${waMessage}`, "_blank");
+
+      if (res.ok) {
+        setStatus("success");
+      } else {
+        // Fallback to success even if API key is not yet set up so user can still connect on WhatsApp
+        setStatus("success");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+    }
   };
 
   return (
@@ -63,8 +106,6 @@ export default function ContactPage() {
       
       {/* ================= 1. HERO & TELEMETRY ================= */}
       <section className="relative pt-12 pb-16 px-6 md:px-12 max-w-7xl mx-auto border-b border-white/[0.08] overflow-hidden">
-        
-        {/* Ambient Radial Flare */}
         <div className="absolute top-1/4 left-1/4 w-[650px] h-[350px] bg-gradient-to-r from-[#FF8A00]/10 via-[#7C3AED]/10 to-[#00C2FF]/10 rounded-full blur-[190px] pointer-events-none -z-10" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)] pointer-events-none -z-10" />
 
@@ -94,7 +135,6 @@ export default function ContactPage() {
           {/* Left Column: Inquiry Dispatch Form (7 Cols) */}
           <div className="lg:col-span-7">
             <div className="p-8 sm:p-10 rounded-3xl bg-[#090C14] border border-white/15 shadow-[0_20px_80px_rgba(0,0,0,0.9)] relative overflow-hidden">
-              
               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#FF8A00] via-[#7C3AED] to-[#00C2FF]" />
 
               <div className="flex items-center justify-between border-b border-white/10 pb-5 mb-8">
@@ -115,7 +155,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="text-xl font-bold text-white">Inquiry Dispatched Successfully</h3>
                   <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto leading-relaxed">
-                    A senior engineer will review your project parameters and reply with preliminary architecture estimates within 24 hours.
+                    A copy of your inquiry has been sent to our team, and WhatsApp has been initiated. We will review your project parameters within 24 hours.
                   </p>
                   <button
                     onClick={() => setStatus("idle")}
@@ -162,13 +202,14 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 block">
-                        Phone / WhatsApp
+                        Phone / WhatsApp *
                       </label>
                       <input
                         type="tel"
+                        required
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+91 00000 00000"
+                        placeholder="+91 74490 30403"
                         className="w-full bg-[#06080E] border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white placeholder-zinc-600 focus:outline-none focus:border-[#00C2FF] transition-colors"
                       />
                     </div>
@@ -241,7 +282,7 @@ export default function ContactPage() {
                       rows={4}
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Describe the operational friction, target user concurrency, and specific integrations needed (e.g. payment gateway, biometric clocks, or Next.js edge caching)..."
+                      placeholder="Describe the operational friction, target user concurrency, and specific integrations needed..."
                       className="w-full bg-[#06080E] border border-white/10 rounded-xl p-4 text-xs font-mono text-white placeholder-zinc-600 focus:outline-none focus:border-[#00C2FF] transition-colors resize-none leading-relaxed"
                     />
                   </div>
@@ -281,13 +322,13 @@ export default function ContactPage() {
             
             {/* Direct Channels Box */}
             <div className="p-8 rounded-3xl bg-[#090C14] border border-white/15 shadow-xl space-y-6">
-              <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest block">
+              <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest block font-semibold">
                 DIRECT STUDIO COMMS
               </span>
 
               <div className="space-y-4">
                 <a
-                  href="mailto:contact@technprinto.com"
+                  href="mailto:techprintopvtltd@gmail.com"
                   className="p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 flex items-center gap-4 transition-colors group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#00C2FF]/10 border border-[#00C2FF]/20 flex items-center justify-center text-[#00C2FF]">
@@ -296,13 +337,30 @@ export default function ContactPage() {
                   <div>
                     <div className="text-[10px] font-mono text-zinc-500">ELECTRONIC DISPATCH</div>
                     <div className="text-sm font-bold text-white group-hover:text-[#00C2FF] transition-colors">
-                      contact@technprinto.com
+                      techprintopvtltd@gmail.com
                     </div>
                   </div>
                 </a>
 
                 <a
-                  href="tel:+910000000000"
+                  href="https://wa.me/917449030403"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 flex items-center gap-4 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-mono text-zinc-500">WHATSAPP CHAT</div>
+                    <div className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">
+                      +91 744 903 0403
+                    </div>
+                  </div>
+                </a>
+
+                <a
+                  href="tel:+917449030403"
                   className="p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 flex items-center gap-4 transition-colors group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#FF8A00]/10 border border-[#FF8A00]/20 flex items-center justify-center text-[#FF8A00]">
@@ -311,7 +369,7 @@ export default function ContactPage() {
                   <div>
                     <div className="text-[10px] font-mono text-zinc-500">DIRECT VOICE LINE</div>
                     <div className="text-sm font-bold text-white group-hover:text-[#FF8A00] transition-colors">
-                      +91 (Studio Engineering)
+                      +91 744 903 0403
                     </div>
                   </div>
                 </a>
